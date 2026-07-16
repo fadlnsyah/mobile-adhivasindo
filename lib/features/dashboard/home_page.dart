@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 20.h),
+          padding: EdgeInsets.fromLTRB(22.w, 20.h, 22.w, 24.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -20,7 +20,8 @@ class CourseCardSection extends StatelessWidget {
         return ContentCard(
           title: course.title,
           author: course.author,
-          date: '${course.category} - ${course.date}',
+          category: course.category,
+          date: course.date,
           imageUrl: course.imageUrl,
         );
       },

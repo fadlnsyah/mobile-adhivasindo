@@ -8,12 +8,14 @@ class ContentCard extends StatelessWidget {
     required this.author,
     required this.date,
     required this.title,
+    this.category,
     this.imageUrl,
     this.onTap,
     super.key,
   });
 
   final String author;
+  final String? category;
   final String date;
   final String? imageUrl;
   final VoidCallback? onTap;
@@ -29,10 +31,10 @@ class ContentCard extends StatelessWidget {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(24),
             child: Container(
-              height: 96,
-              width: 96,
+              height: 102,
+              width: 102,
               color: AppTheme.primaryColor.withValues(alpha: 0.12),
               child: hasImage
                   ? Image.network(imageUrl!, fit: BoxFit.cover)
@@ -54,10 +56,31 @@ class ContentCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    height: 1.25,
+                    height: 1.22,
                   ),
                 ),
-                const SizedBox(height: 12),
+                if (category != null) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      category!,
+                      style: const TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     const Icon(
@@ -80,7 +103,7 @@ class ContentCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
                 Text(
                   date,
                   style: TextStyle(

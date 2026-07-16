@@ -39,7 +39,7 @@ class AppBottomNavigation extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.article_rounded),
-            label: 'Contents',
+            label: 'Content',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle_rounded),
