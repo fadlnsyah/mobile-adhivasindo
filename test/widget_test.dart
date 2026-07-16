@@ -1,14 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile_adhivasindo/main.dart';
 
 void main() {
-  testWidgets('renders home dashboard', (WidgetTester tester) async {
-    await tester.pumpWidget(const MobileAdhivasindoApp());
+  testWidgets('renders login page', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MobileAdhivasindoApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Good Morning'), findsOneWidget);
-    expect(find.text('Learning Anywhere'), findsOneWidget);
-    expect(find.text('Popular Courses'), findsOneWidget);
+    expect(find.text('Welcome Back'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
   });
 }

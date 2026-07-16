@@ -9,9 +9,9 @@ import '../../features/dashboard/home_page.dart';
 import '../../shared/widgets/widget_showcase_page.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/login',
   routes: [
-    GoRoute(path: '/', builder: (context, state) => const HomePage()),
+    GoRoute(path: '/', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     GoRoute(path: '/home', builder: (context, state) => const HomePage()),
     GoRoute(
