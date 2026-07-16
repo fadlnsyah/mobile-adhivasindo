@@ -9,6 +9,7 @@ class ContentCard extends StatelessWidget {
     required this.date,
     required this.title,
     this.category,
+    this.excerpt,
     this.imageUrl,
     this.onTap,
     super.key,
@@ -17,6 +18,7 @@ class ContentCard extends StatelessWidget {
   final String author;
   final String? category;
   final String date;
+  final String? excerpt;
   final String? imageUrl;
   final VoidCallback? onTap;
   final String title;
@@ -77,6 +79,20 @@ class ContentCard extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                       ),
+                    ),
+                  ),
+                ],
+                if (excerpt != null && excerpt!.isNotEmpty) ...[
+                  const SizedBox(height: 9),
+                  Text(
+                    excerpt!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.black.withValues(alpha: 0.48),
+                      fontSize: 12,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
