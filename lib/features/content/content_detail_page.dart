@@ -63,6 +63,7 @@ class _ContentDetailPageState extends ConsumerState<ContentDetailPage> {
                 )
               else if (detailState.data != null)
                 _ContentDetailBody(
+                  id: detailState.data!.id,
                   title: detailState.data!.title,
                   author: detailState.data!.author.name,
                   date: formatContentDate(detailState.data!.createdAt),
@@ -122,6 +123,7 @@ class _ContentDetailBody extends StatelessWidget {
     required this.author,
     required this.content,
     required this.date,
+    required this.id,
     required this.loading,
     required this.onBack,
     required this.title,
@@ -131,6 +133,7 @@ class _ContentDetailBody extends StatelessWidget {
   final String author;
   final String content;
   final String date;
+  final int id;
   final String? imageUrl;
   final bool loading;
   final VoidCallback onBack;
@@ -218,6 +221,25 @@ class _ContentDetailBody extends StatelessWidget {
           ),
         ),
         SizedBox(height: 24.h),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => context.go('/content/$id/edit'),
+            icon: const Icon(Icons.edit_rounded),
+            label: const Text('Edit'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryColor,
+              padding: EdgeInsets.symmetric(vertical: 15.h),
+              side: BorderSide(
+                color: AppTheme.primaryColor.withValues(alpha: 0.35),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 12.h),
         if (loading) ...[
           const LinearProgressIndicator(
             color: AppTheme.primaryColor,

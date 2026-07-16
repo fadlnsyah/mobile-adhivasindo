@@ -65,7 +65,26 @@ class ContentService {
     }
   }
 
+  Future<void> updateContent(int id, CreateContentRequest request) async {
+    try {
+      await _dio.put<Map<String, dynamic>>(
+        '/contents/$id',
+        data: request.toJson(),
+      );
+    } on DioException catch (error) {
+      throw ContentException(_resolveErrorMessage(error));
+    }
+  }
+
   String _resolveErrorMessage(DioException error) {
+    if (error.response?.statusCode == 401) {
+      return 'Unauthorized';
+    }
+
+    if (error.response?.statusCode == 403) {
+      return 'You are not allowed to modify this content.';
+    }
+
     if (error.response?.statusCode == 404) {
       return 'Content not found';
     }
