@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../core/network/dio_client.dart';
 import '../models/content_model.dart';
+import '../models/create_content_request.dart';
 
 class ContentException implements Exception {
   const ContentException(this.message);
@@ -53,6 +54,17 @@ class ContentService {
     }
   }
 
+  Future<void> createContent(CreateContentRequest request) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        '/contents',
+        data: request.toJson(),
+      );
+    } on DioException catch (error) {
+      throw ContentException(_resolveErrorMessage(error));
+    }
+  }
+
   String _resolveErrorMessage(DioException error) {
     if (error.response?.statusCode == 404) {
       return 'Content not found';
@@ -66,6 +78,19 @@ class ContentService {
     }
 
     final responseData = error.response?.data;
+
+    if (error.response?.statusCode == 422 &&
+        responseData is Map<String, dynamic>) {
+      final errors = responseData['errors'];
+
+      if (errors is Map<String, dynamic> && errors.isNotEmpty) {
+        final firstError = errors.values.first;
+
+        if (firstError is List && firstError.isNotEmpty) {
+          return firstError.first.toString();
+        }
+      }
+    }
 
     if (responseData is Map<String, dynamic> &&
         responseData['message'] is String) {
