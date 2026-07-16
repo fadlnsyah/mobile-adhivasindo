@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../shared/widgets/app_card.dart';
 import '../../shared/widgets/app_text_field.dart';
+import 'auth_notifier.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -54,12 +57,45 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
-  void _handleSubmit() {
-    _formKey.currentState?.validate();
+  Future<void> _handleSubmit() async {
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid) {
+      return;
+    }
+
+    try {
+      final response = await ref
+          .read(authNotifierProvider.notifier)
+          .login(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(response.message)));
+
+      context.go('/home');
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authNotifierProvider).loading;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -111,6 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                         keyboardType: TextInputType.emailAddress,
                         prefixIcon: Icons.email_rounded,
                         validator: _validateEmail,
+                        readOnly: isLoading,
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
@@ -119,9 +156,13 @@ class _LoginPageState extends State<LoginPage> {
                         obscureText: true,
                         prefixIcon: Icons.lock_rounded,
                         validator: _validatePassword,
+                        readOnly: isLoading,
                       ),
                       const SizedBox(height: 24),
-                      AppButton(text: 'Sign In', onPressed: _handleSubmit),
+                      AppButton(
+                        text: isLoading ? 'Signing In...' : 'Sign In',
+                        onPressed: isLoading ? null : _handleSubmit,
+                      ),
                     ],
                   ),
                 ),

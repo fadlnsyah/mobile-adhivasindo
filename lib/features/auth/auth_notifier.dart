@@ -1,11 +1,16 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/storage/auth_storage.dart';
 import '../../models/login_response.dart';
 import '../../services/auth_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
+});
+
+final authStorageProvider = Provider<AuthStorage>((ref) {
+  return AuthStorage();
 });
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(
@@ -38,11 +43,21 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(loading: true);
 
     try {
-      return await ref
+      final response = await ref
           .read(authServiceProvider)
           .login(email: email, password: password);
+
+      final authStorage = ref.read(authStorageProvider);
+      await authStorage.saveToken(response.token);
+      await authStorage.saveUser(response.user);
+
+      return response;
     } finally {
       state = state.copyWith(loading: false);
     }
+  }
+
+  Future<void> logout() async {
+    await ref.read(authStorageProvider).clear();
   }
 }
