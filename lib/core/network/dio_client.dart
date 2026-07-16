@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../constants/api_constants.dart';
+import '../storage/auth_storage.dart';
 
 class DioClient {
   DioClient()
@@ -18,7 +19,13 @@ class DioClient {
       ) {
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          final token = await AuthStorage().getToken();
+
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+
           debugPrint('[DIO] ${options.method} ${options.uri}');
           handler.next(options);
         },
