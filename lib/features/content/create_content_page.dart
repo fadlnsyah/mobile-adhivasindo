@@ -5,11 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../models/create_content_request.dart';
-import '../../shared/widgets/app_button.dart';
-import '../../shared/widgets/app_card.dart';
-import '../../shared/widgets/app_text_field.dart';
 import 'content_notifier.dart';
 import 'create_content_notifier.dart';
+import 'widgets/content_form.dart';
 
 class CreateContentPage extends ConsumerStatefulWidget {
   const CreateContentPage({super.key});
@@ -30,50 +28,6 @@ class _CreateContentPageState extends ConsumerState<CreateContentPage> {
     _contentController.dispose();
     _imageController.dispose();
     super.dispose();
-  }
-
-  String? _validateTitle(String? value) {
-    final title = value?.trim() ?? '';
-
-    if (title.isEmpty) {
-      return 'Title wajib diisi';
-    }
-
-    if (title.length < 3) {
-      return 'Title minimal 3 karakter';
-    }
-
-    if (title.length > 255) {
-      return 'Title maksimal 255 karakter';
-    }
-
-    return null;
-  }
-
-  String? _validateContent(String? value) {
-    final content = value?.trim() ?? '';
-
-    if (content.isEmpty) {
-      return 'Content wajib diisi';
-    }
-
-    return null;
-  }
-
-  String? _validateImageUrl(String? value) {
-    final image = value?.trim() ?? '';
-
-    if (image.isEmpty) {
-      return null;
-    }
-
-    final uri = Uri.tryParse(image);
-
-    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
-      return 'Image harus berupa URL valid';
-    }
-
-    return null;
   }
 
   Future<void> _handleSubmit() async {
@@ -144,55 +98,16 @@ class _CreateContentPageState extends ConsumerState<CreateContentPage> {
               ),
             ),
             SizedBox(height: 24.h),
-            AppCard(
-              padding: const EdgeInsets.all(18),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    AppTextField(
-                      controller: _titleController,
-                      hintText: 'Title',
-                      prefixIcon: Icons.title_rounded,
-                      readOnly: isLoading,
-                      validator: _validateTitle,
-                    ),
-                    SizedBox(height: 16.h),
-                    AppTextField(
-                      controller: _contentController,
-                      hintText: 'Content',
-                      keyboardType: TextInputType.multiline,
-                      maxLines: 7,
-                      minLines: 5,
-                      prefixIcon: Icons.notes_rounded,
-                      readOnly: isLoading,
-                      validator: _validateContent,
-                    ),
-                    SizedBox(height: 16.h),
-                    AppTextField(
-                      controller: _imageController,
-                      hintText: 'Image URL',
-                      keyboardType: TextInputType.url,
-                      prefixIcon: Icons.link_rounded,
-                      readOnly: isLoading,
-                      validator: _validateImageUrl,
-                    ),
-                    SizedBox(height: 24.h),
-                    AppButton(
-                      text: isLoading ? 'Creating...' : 'Create',
-                      icon: Icons.add_rounded,
-                      onPressed: isLoading ? null : _handleSubmit,
-                    ),
-                    SizedBox(height: 12.h),
-                    AppButton(
-                      text: 'Cancel',
-                      variant: AppButtonVariant.secondary,
-                      onPressed: isLoading
-                          ? null
-                          : () => context.go('/content'),
-                    ),
-                  ],
-                ),
+            Form(
+              key: _formKey,
+              child: ContentForm(
+                titleController: _titleController,
+                contentController: _contentController,
+                imageController: _imageController,
+                loading: isLoading,
+                submitText: isLoading ? 'Creating...' : 'Create',
+                submitCallback: _handleSubmit,
+                cancelCallback: () => context.go('/content'),
               ),
             ),
             SizedBox(height: 18.h),
