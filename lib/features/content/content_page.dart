@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_card.dart';
 import '../../shared/widgets/app_search_bar.dart';
 import '../../shared/widgets/content_card.dart';
+import 'content_date_formatter.dart';
 import 'content_notifier.dart';
 
 class ContentPage extends ConsumerStatefulWidget {
@@ -55,9 +57,10 @@ class _ContentPageState extends ConsumerState<ContentPage> {
                   child: ContentCard(
                     title: content.title,
                     author: content.author.name,
-                    date: content.createdAt,
+                    date: formatContentDate(content.createdAt),
                     excerpt: content.content,
                     imageUrl: content.image,
+                    onTap: () => context.go('/content/${content.id}'),
                   ),
                 );
               }),
