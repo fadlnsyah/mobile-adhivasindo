@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/app_bottom_navigation.dart';
 import '../../shared/widgets/app_card.dart';
 import '../../shared/widgets/app_search_bar.dart';
 import '../../shared/widgets/content_card.dart';
@@ -122,6 +123,7 @@ class _ContentPageState extends ConsumerState<ContentPage> {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNavigation(currentIndex: 1),
     );
   }
 }

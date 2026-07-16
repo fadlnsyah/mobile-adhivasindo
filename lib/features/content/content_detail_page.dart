@@ -313,16 +313,14 @@ class _ContentDetailBody extends StatelessWidget {
         SizedBox(height: 24.h),
         SizedBox(
           width: double.infinity,
-          child: OutlinedButton.icon(
+          child: FilledButton.icon(
             onPressed: () => context.go('/content/$id/edit'),
             icon: const Icon(Icons.edit_rounded),
             label: const Text('Edit'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primaryColor,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 15.h),
-              side: BorderSide(
-                color: AppTheme.primaryColor.withValues(alpha: 0.35),
-              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),

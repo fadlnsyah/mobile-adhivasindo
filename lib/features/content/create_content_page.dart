@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../models/create_content_request.dart';
+import '../../shared/widgets/app_bottom_navigation.dart';
 import 'content_notifier.dart';
 import 'create_content_notifier.dart';
 import 'widgets/content_form.dart';
@@ -123,6 +124,7 @@ class _CreateContentPageState extends ConsumerState<CreateContentPage> {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNavigation(currentIndex: 2),
     );
   }
 }

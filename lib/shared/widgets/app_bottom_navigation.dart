@@ -66,6 +66,10 @@ class AppBottomNavigation extends StatelessWidget {
         context.go('/content');
       case 2:
         context.go('/content/create');
+      case 3:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Profile is not available yet')),
+        );
     }
   }
 }
