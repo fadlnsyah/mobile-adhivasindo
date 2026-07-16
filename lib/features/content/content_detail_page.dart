@@ -7,6 +7,8 @@ import '../../core/theme/app_theme.dart';
 import '../../shared/widgets/app_card.dart';
 import 'content_date_formatter.dart';
 import 'content_detail_notifier.dart';
+import 'content_notifier.dart';
+import 'delete_content_notifier.dart';
 
 class ContentDetailPage extends ConsumerStatefulWidget {
   const ContentDetailPage({required this.contentId, super.key});
@@ -37,6 +39,7 @@ class _ContentDetailPageState extends ConsumerState<ContentDetailPage> {
   @override
   Widget build(BuildContext context) {
     final detailState = ref.watch(contentDetailNotifierProvider);
+    final deleteState = ref.watch(deleteContentNotifierProvider);
     final id = _contentId;
 
     return Scaffold(
@@ -70,13 +73,96 @@ class _ContentDetailPageState extends ConsumerState<ContentDetailPage> {
                   content: detailState.data!.content,
                   imageUrl: detailState.data!.image,
                   loading: detailState.loading,
+                  deleting: deleteState.loading,
                   onBack: () => _goBack(context),
+                  onDelete: () => _confirmDelete(context, detailState.data!.id),
                 ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, int id) async {
+    final result = await showDialog<_DeleteResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final isDeleting = ref.watch(deleteContentNotifierProvider).loading;
+
+            return AlertDialog(
+              title: const Text('Delete Content?'),
+              content: const Text('This action cannot be undone.'),
+              actions: [
+                TextButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: isDeleting
+                      ? null
+                      : () async {
+                          try {
+                            await ref
+                                .read(deleteContentNotifierProvider.notifier)
+                                .delete(id);
+                            await ref
+                                .read(contentNotifierProvider.notifier)
+                                .refresh();
+
+                            if (dialogContext.mounted) {
+                              Navigator.of(
+                                dialogContext,
+                              ).pop(const _DeleteResult.success());
+                            }
+                          } catch (error) {
+                            if (dialogContext.mounted) {
+                              Navigator.of(
+                                dialogContext,
+                              ).pop(_DeleteResult.error(error.toString()));
+                            }
+                          }
+                        },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(isDeleting ? 'Deleting...' : 'Delete'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null || !context.mounted) {
+      return;
+    }
+
+    if (result.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Content deleted successfully')),
+      );
+
+      context.go('/content');
+      return;
+    }
+
+    final message = result.message ?? 'Error deleting content';
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+
+    if (message == 'Unauthorized') {
+      context.go('/login');
+    }
   }
 
   void _goBack(BuildContext context) {
@@ -123,8 +209,10 @@ class _ContentDetailBody extends StatelessWidget {
     required this.author,
     required this.content,
     required this.date,
+    required this.deleting,
     required this.id,
     required this.loading,
+    required this.onDelete,
     required this.onBack,
     required this.title,
     this.imageUrl,
@@ -133,10 +221,12 @@ class _ContentDetailBody extends StatelessWidget {
   final String author;
   final String content;
   final String date;
+  final bool deleting;
   final int id;
   final String? imageUrl;
   final bool loading;
   final VoidCallback onBack;
+  final VoidCallback onDelete;
   final String title;
 
   @override
@@ -233,6 +323,23 @@ class _ContentDetailBody extends StatelessWidget {
               side: BorderSide(
                 color: AppTheme.primaryColor.withValues(alpha: 0.35),
               ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 12.h),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: deleting ? null : onDelete,
+            icon: const Icon(Icons.delete_rounded),
+            label: Text(deleting ? 'Deleting...' : 'Delete'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.redAccent,
+              padding: EdgeInsets.symmetric(vertical: 15.h),
+              side: const BorderSide(color: Colors.redAccent),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
@@ -406,4 +513,13 @@ class _SkeletonBox extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DeleteResult {
+  const _DeleteResult.success() : success = true, message = null;
+
+  const _DeleteResult.error(this.message) : success = false;
+
+  final String? message;
+  final bool success;
 }

@@ -76,6 +76,14 @@ class ContentService {
     }
   }
 
+  Future<void> deleteContent(int id) async {
+    try {
+      await _dio.delete<Map<String, dynamic>>('/contents/$id');
+    } on DioException catch (error) {
+      throw ContentException(_resolveErrorMessage(error));
+    }
+  }
+
   String _resolveErrorMessage(DioException error) {
     if (error.response?.statusCode == 401) {
       return 'Unauthorized';
