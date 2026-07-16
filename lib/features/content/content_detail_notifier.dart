@@ -46,14 +46,7 @@ class ContentDetailNotifier extends Notifier<ContentDetailState> {
 
   Future<void> loadContent(int id) async {
     _contentId = id;
-    state = state.copyWith(loading: true, clearData: true, clearError: true);
-
-    try {
-      final content = await ref.read(contentServiceProvider).getContentById(id);
-      state = state.copyWith(data: content, loading: false, clearError: true);
-    } catch (error) {
-      state = state.copyWith(error: error.toString(), loading: false);
-    }
+    await _fetchContent(id, clearData: true);
   }
 
   Future<void> refresh() async {
@@ -63,6 +56,21 @@ class ContentDetailNotifier extends Notifier<ContentDetailState> {
       return;
     }
 
-    await loadContent(id);
+    await _fetchContent(id, clearData: state.data == null);
+  }
+
+  Future<void> _fetchContent(int id, {required bool clearData}) async {
+    state = state.copyWith(
+      loading: true,
+      clearData: clearData,
+      clearError: true,
+    );
+
+    try {
+      final content = await ref.read(contentServiceProvider).getContentById(id);
+      state = state.copyWith(data: content, loading: false, clearError: true);
+    } catch (error) {
+      state = state.copyWith(error: error.toString(), loading: false);
+    }
   }
 }

@@ -41,35 +41,50 @@ class _ContentDetailPageState extends ConsumerState<ContentDetailPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 24.h),
-          children: [
-            _DetailTopBar(onBack: () => context.pop()),
-            SizedBox(height: 20.h),
-            if (id == null || detailState.notFound)
-              _ContentNotFoundState(onBack: () => context.pop())
-            else if (detailState.loading && detailState.data == null)
-              const _ContentDetailLoadingState()
-            else if (detailState.error != null)
-              _ContentDetailErrorState(
-                message: detailState.error!,
-                onRetry: ref
-                    .read(contentDetailNotifierProvider.notifier)
-                    .refresh,
-              )
-            else if (detailState.data != null)
-              _ContentDetailBody(
-                title: detailState.data!.title,
-                author: detailState.data!.author.name,
-                date: formatContentDate(detailState.data!.createdAt),
-                content: detailState.data!.content,
-                imageUrl: detailState.data!.image,
-                onBack: () => context.pop(),
-              ),
-          ],
+        child: RefreshIndicator(
+          color: AppTheme.primaryColor,
+          onRefresh: ref.read(contentDetailNotifierProvider.notifier).refresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(22.w, 18.h, 22.w, 24.h),
+            children: [
+              _DetailTopBar(onBack: () => _goBack(context)),
+              SizedBox(height: 20.h),
+              if (id == null || detailState.notFound)
+                _ContentNotFoundState(onBack: () => _goBack(context))
+              else if (detailState.loading && detailState.data == null)
+                const _ContentDetailLoadingState()
+              else if (detailState.error != null)
+                _ContentDetailErrorState(
+                  message: detailState.error!,
+                  onRetry: ref
+                      .read(contentDetailNotifierProvider.notifier)
+                      .refresh,
+                )
+              else if (detailState.data != null)
+                _ContentDetailBody(
+                  title: detailState.data!.title,
+                  author: detailState.data!.author.name,
+                  date: formatContentDate(detailState.data!.createdAt),
+                  content: detailState.data!.content,
+                  imageUrl: detailState.data!.image,
+                  loading: detailState.loading,
+                  onBack: () => _goBack(context),
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _goBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go('/content');
   }
 }
 
@@ -107,6 +122,7 @@ class _ContentDetailBody extends StatelessWidget {
     required this.author,
     required this.content,
     required this.date,
+    required this.loading,
     required this.onBack,
     required this.title,
     this.imageUrl,
@@ -116,6 +132,7 @@ class _ContentDetailBody extends StatelessWidget {
   final String content;
   final String date;
   final String? imageUrl;
+  final bool loading;
   final VoidCallback onBack;
   final String title;
 
@@ -201,6 +218,13 @@ class _ContentDetailBody extends StatelessWidget {
           ),
         ),
         SizedBox(height: 24.h),
+        if (loading) ...[
+          const LinearProgressIndicator(
+            color: AppTheme.primaryColor,
+            minHeight: 3,
+          ),
+          SizedBox(height: 14.h),
+        ],
         SizedBox(
           width: double.infinity,
           child: FilledButton(
