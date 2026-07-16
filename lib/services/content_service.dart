@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../core/network/dio_client.dart';
+import '../models/content_list_response.dart';
 import '../models/content_model.dart';
 import '../models/create_content_request.dart';
 
@@ -19,20 +20,23 @@ class ContentService {
 
   final Dio _dio;
 
-  Future<List<ContentModel>> getContents() async {
+  Future<ContentListResponse> getContents({
+    int page = 1,
+    int perPage = 10,
+    String? search,
+  }) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/contents');
-      final responseData = response.data;
-      final contents = responseData?['data'];
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/contents',
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+          if (search != null && search.trim().isNotEmpty)
+            'search': search.trim(),
+        },
+      );
 
-      if (contents is! List) {
-        return [];
-      }
-
-      return contents
-          .whereType<Map<String, dynamic>>()
-          .map(ContentModel.fromJson)
-          .toList();
+      return ContentListResponse.fromJson(response.data ?? {});
     } on DioException catch (error) {
       throw ContentException(_resolveErrorMessage(error));
     }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,11 +20,28 @@ class ContentPage extends ConsumerStatefulWidget {
 }
 
 class _ContentPageState extends ConsumerState<ContentPage> {
+  final _searchController = TextEditingController();
+  Timer? _searchDebounce;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(contentNotifierProvider.notifier).loadContents();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _handleSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      ref.read(contentNotifierProvider.notifier).searchContents(value);
     });
   }
 
@@ -39,7 +58,11 @@ class _ContentPageState extends ConsumerState<ContentPage> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(22.w, 12.h, 22.w, 24.h),
           children: [
-            const AppSearchBar(hintText: 'Search content...', readOnly: true),
+            AppSearchBar(
+              controller: _searchController,
+              hintText: 'Search content...',
+              onChanged: _handleSearchChanged,
+            ),
             SizedBox(height: 20.h),
             if (contentState.loading && contentState.data.isEmpty)
               const _ContentLoadingState()
@@ -49,8 +72,19 @@ class _ContentPageState extends ConsumerState<ContentPage> {
                 onRetry: ref.read(contentNotifierProvider.notifier).refresh,
               )
             else if (contentState.data.isEmpty)
-              const _ContentEmptyState()
-            else
+              _ContentEmptyState(hasSearch: contentState.hasSearch)
+            else ...[
+              Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: Text(
+                  '${contentState.total} content found',
+                  style: TextStyle(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
               ...contentState.data.map((content) {
                 return Padding(
                   padding: EdgeInsets.only(bottom: 14.h),
@@ -64,6 +98,27 @@ class _ContentPageState extends ConsumerState<ContentPage> {
                   ),
                 );
               }),
+              if (contentState.loadingMore)
+                const _ContentLoadMoreState()
+              else if (contentState.hasMore)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: FilledButton(
+                    onPressed: ref
+                        .read(contentNotifierProvider.notifier)
+                        .loadMore,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text('Load More'),
+                  ),
+                ),
+            ],
           ],
         ),
       ),
@@ -135,8 +190,31 @@ class _SkeletonLine extends StatelessWidget {
   }
 }
 
+class _ContentLoadMoreState extends StatelessWidget {
+  const _ContentLoadMoreState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 12.h),
+      child: const Center(
+        child: SizedBox(
+          height: 24,
+          width: 24,
+          child: CircularProgressIndicator(
+            color: AppTheme.primaryColor,
+            strokeWidth: 2.4,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ContentEmptyState extends StatelessWidget {
-  const _ContentEmptyState();
+  const _ContentEmptyState({required this.hasSearch});
+
+  final bool hasSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +230,7 @@ class _ContentEmptyState extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
             Text(
-              'No content available',
+              hasSearch ? 'No search results found' : 'No content available',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
