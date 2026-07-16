@@ -43,7 +43,19 @@ class ContentNotifier extends Notifier<ContentState> {
   }
 
   Future<void> loadContents() async {
-    state = state.copyWith(loading: true, clearError: true);
+    await _fetchContents(showLoading: true);
+  }
+
+  Future<void> refresh() async {
+    await _fetchContents(showLoading: state.data.isEmpty);
+  }
+
+  Future<void> _fetchContents({required bool showLoading}) async {
+    if (showLoading) {
+      state = state.copyWith(loading: true, clearError: true);
+    } else {
+      state = state.copyWith(clearError: true);
+    }
 
     try {
       final contents = await ref.read(contentServiceProvider).getContents();
@@ -51,9 +63,5 @@ class ContentNotifier extends Notifier<ContentState> {
     } catch (error) {
       state = state.copyWith(error: error.toString(), loading: false);
     }
-  }
-
-  Future<void> refresh() async {
-    await loadContents();
   }
 }

@@ -34,6 +34,7 @@ class _ContentPageState extends ConsumerState<ContentPage> {
         color: AppTheme.primaryColor,
         onRefresh: ref.read(contentNotifierProvider.notifier).refresh,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.fromLTRB(22.w, 12.h, 22.w, 24.h),
           children: [
             const AppSearchBar(hintText: 'Search content...', readOnly: true),
