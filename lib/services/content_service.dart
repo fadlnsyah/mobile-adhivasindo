@@ -37,7 +37,27 @@ class ContentService {
     }
   }
 
+  Future<ContentModel> getContentById(int id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>('/contents/$id');
+      final responseData = response.data;
+      final content = responseData?['data'];
+
+      if (content is! Map<String, dynamic>) {
+        throw const ContentException('Content not found');
+      }
+
+      return ContentModel.fromJson(content);
+    } on DioException catch (error) {
+      throw ContentException(_resolveErrorMessage(error));
+    }
+  }
+
   String _resolveErrorMessage(DioException error) {
+    if (error.response?.statusCode == 404) {
+      return 'Content not found';
+    }
+
     if (error.type == DioExceptionType.connectionTimeout ||
         error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.connectionError ||
