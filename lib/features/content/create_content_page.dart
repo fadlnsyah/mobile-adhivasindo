@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../models/create_content_request.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../shared/widgets/app_card.dart';
 import '../../shared/widgets/app_text_field.dart';
+import 'content_notifier.dart';
+import 'create_content_notifier.dart';
 
-class CreateContentPage extends StatefulWidget {
+class CreateContentPage extends ConsumerStatefulWidget {
   const CreateContentPage({super.key});
 
   @override
-  State<CreateContentPage> createState() => _CreateContentPageState();
+  ConsumerState<CreateContentPage> createState() => _CreateContentPageState();
 }
 
-class _CreateContentPageState extends State<CreateContentPage> {
+class _CreateContentPageState extends ConsumerState<CreateContentPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
@@ -65,19 +69,59 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
     final uri = Uri.tryParse(image);
 
-    if (uri == null || !uri.hasAbsolutePath || !uri.hasScheme) {
+    if (uri == null || !uri.hasScheme || uri.host.isEmpty) {
       return 'Image harus berupa URL valid';
     }
 
     return null;
   }
 
-  void _handleSubmit() {
-    _formKey.currentState?.validate();
+  Future<void> _handleSubmit() async {
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid) {
+      return;
+    }
+
+    final image = _imageController.text.trim();
+
+    try {
+      await ref
+          .read(createContentNotifierProvider.notifier)
+          .create(
+            CreateContentRequest(
+              title: _titleController.text.trim(),
+              content: _contentController.text.trim(),
+              image: image.isEmpty ? null : image,
+            ),
+          );
+
+      await ref.read(contentNotifierProvider.notifier).refresh();
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Content created successfully')),
+      );
+
+      context.go('/content');
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(createContentNotifierProvider).loading;
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -110,6 +154,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       controller: _titleController,
                       hintText: 'Title',
                       prefixIcon: Icons.title_rounded,
+                      readOnly: isLoading,
                       validator: _validateTitle,
                     ),
                     SizedBox(height: 16.h),
@@ -120,6 +165,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       maxLines: 7,
                       minLines: 5,
                       prefixIcon: Icons.notes_rounded,
+                      readOnly: isLoading,
                       validator: _validateContent,
                     ),
                     SizedBox(height: 16.h),
@@ -128,19 +174,22 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       hintText: 'Image URL',
                       keyboardType: TextInputType.url,
                       prefixIcon: Icons.link_rounded,
+                      readOnly: isLoading,
                       validator: _validateImageUrl,
                     ),
                     SizedBox(height: 24.h),
                     AppButton(
-                      text: 'Create',
+                      text: isLoading ? 'Creating...' : 'Create',
                       icon: Icons.add_rounded,
-                      onPressed: _handleSubmit,
+                      onPressed: isLoading ? null : _handleSubmit,
                     ),
                     SizedBox(height: 12.h),
                     AppButton(
                       text: 'Cancel',
                       variant: AppButtonVariant.secondary,
-                      onPressed: () => context.go('/content'),
+                      onPressed: isLoading
+                          ? null
+                          : () => context.go('/content'),
                     ),
                   ],
                 ),

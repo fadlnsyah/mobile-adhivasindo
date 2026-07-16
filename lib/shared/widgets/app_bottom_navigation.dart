@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 
@@ -10,6 +11,9 @@ class AppBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onNavigationTap =
+        onTap ?? (index) => _handleDefaultTap(context, index);
+
     return Container(
       margin: const EdgeInsets.all(18),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -31,7 +35,7 @@ class AppBottomNavigation extends StatelessWidget {
         backgroundColor: Colors.transparent,
         selectedItemColor: AppTheme.primaryColor,
         unselectedItemColor: Colors.black.withValues(alpha: 0.35),
-        onTap: onTap,
+        onTap: onNavigationTap,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_rounded),
@@ -52,5 +56,16 @@ class AppBottomNavigation extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _handleDefaultTap(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.go('/home');
+      case 1:
+        context.go('/content');
+      case 2:
+        context.go('/content/create');
+    }
   }
 }
