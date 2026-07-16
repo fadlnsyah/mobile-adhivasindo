@@ -1,16 +1,72 @@
-# mobile_adhivasindo
+# Mobile Adhivasindo
 
-A new Flutter project.
+## Project Overview
 
-## Getting Started
+Mobile client untuk Take Home Test Fullstack Adhivasindo. Project ini disiapkan sebagai aplikasi Flutter yang akan menggunakan Backend Laravel Adhivasindo pada sprint berikutnya.
 
-This project is a starting point for a Flutter application.
+Sprint M-0 hanya berisi fondasi project, routing placeholder, theme, struktur folder, dan konfigurasi networking dasar.
 
-A few resources to get you started if this is your first Flutter project:
+## Tech Stack
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flutter Stable
+- Dart
+- Riverpod
+- Dio
+- GoRouter
+- SharedPreferences
+- flutter_screenutil
+- google_fonts
+- equatable
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Installation
+
+```bash
+flutter pub get
+```
+
+## Run Project
+
+Pastikan Android emulator berjalan, lalu jalankan:
+
+```bash
+flutter run
+```
+
+Backend lokal Laravel untuk Android emulator menggunakan base URL:
+
+```text
+http://10.0.2.2:8000/api
+```
+
+## Folder Structure
+
+```text
+lib/
+├── core/
+│   ├── constants/
+│   ├── network/
+│   ├── router/
+│   ├── storage/
+│   └── theme/
+├── features/
+│   ├── auth/
+│   ├── dashboard/
+│   └── content/
+├── models/
+├── services/
+├── shared/
+│   └── widgets/
+└── utils/
+```
+
+## Validation
+
+```bash
+dart format .
+flutter analyze
+flutter test
+```
+
+## Author
+
+Fadlan Syah
